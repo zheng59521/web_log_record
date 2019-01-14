@@ -6,5 +6,6 @@
 * nginx_gif
 * golang
 * redis  
-
+  
+![流程Process](https://github.com/zheng59521/web_log_record/tree/dev/process.png)
 
