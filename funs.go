@@ -1,5 +1,9 @@
 package main
 
+/*
+函数定义
+*/
+
 import (
 	"bufio"
 	"crypto/md5"
