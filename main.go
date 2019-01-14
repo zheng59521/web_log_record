@@ -1,5 +1,9 @@
 package main
 
+/*
+应用主体
+*/
+
 import (
 	"flag"
 	"os"
