@@ -1,5 +1,9 @@
 package main
 
+/*
+变量,常量, 结构体定义
+*/
+
 import (
 	"github.com/mediocregopher/radix.v2/pool"
 )
