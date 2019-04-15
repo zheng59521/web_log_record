@@ -14,9 +14,9 @@ var (
 )
 
 const (
-	ACCESS_LOG_FILE_PATH  = "./tmp/log.log"           // access日志存放路径
-	CHANNEL_LOG_FILE_PATH = "./tmp/channel.log"       // 程序运行日志存放路径
-	HANDLE_LOG            = "/log.gif?"               // 分隔符
+	ACCESS_LOG_FILE_PATH  = "./tmp/channel.log"       // access日志存放路径
+	CHANNEL_LOG_FILE_PATH = "./tmp/log.log"           // 程序运行日志存放路径
+	HANDLE_LOG            = "log.gif?"                // 分隔符
 	HANDLE_ARTICLE        = "/article/"               // 文章页分隔符
 	HANDLE_LIST           = "/list/"                  // 列表页分隔符
 	HANDLE_INDEX          = "/portal/list/index.html" // 首页分隔符
@@ -30,6 +30,7 @@ type JsData struct {
 	url   string
 	refer string
 	ua    string
+	ip    string
 }
 
 /*

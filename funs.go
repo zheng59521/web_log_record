@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -38,7 +39,7 @@ func ReadLogTOLine(params *CmfParams, logChannel chan string) error {
 		}
 		count++
 		// log.Infoln("line", line)
-		redisPool.Cmd("set", "name", count)
+		// redisPool.Cmd("set", "name", count)
 		logChannel <- line
 
 	}
@@ -52,12 +53,11 @@ func ReadLogTOLine(params *CmfParams, logChannel chan string) error {
 */
 func fomatURLParams(logStr string) JsData {
 	logStr = strings.TrimSpace(logStr)
-
-	pos1 := str.IndexOf(logStr, HANDLE_LOG, 0)
+	// fmt.Println("logStr", logStr)
+	pos1 := strings.Index(logStr, "/log.")
 	if pos1 == -1 {
 		return JsData{}
 	}
-
 	pos1 += len(HANDLE_LOG) - 1
 	pos2 := str.IndexOf(logStr, " 200 43", pos1)
 
@@ -70,11 +70,13 @@ func fomatURLParams(logStr string) JsData {
 	data := urlObj.Query()
 
 	// log.Infof("url :" + data.Get("url") + "refer: " + data.Get("refer") + "ua:" + data.Get("ua"))
+	// fmt.Println("url :" + data.Get("url") + "refer: " + data.Get("refer") + "ua:" + data.Get("ua"))
 	return JsData{
 		data.Get("time"),
 		data.Get("url"),
 		data.Get("refer"),
 		data.Get("ua"),
+		data.Get("ip"),
 	}
 
 }
@@ -88,16 +90,19 @@ func LogHandle(logChannel chan string, pvChannel chan URLData, uvChannel chan UR
 		num++
 		// 切割逐行分析出的文本
 		data := fomatURLParams(logStr)
-		// log.Infof("url :" + data.url + "refer: " + data.refer + "ua:" + data.ua)
-		// 生成用户uid
-		hasher := md5.New()
-		hasher.Write([]byte(data.refer + data.ua))
-		uid := hex.EncodeToString(hasher.Sum(nil))
-		urlObj := URLData{data, uid, formatURLData(data.url, data.time)}
-		// log.Infof("refer" + urlObj.data.refer + "ua" + urlObj.data.ua)
-		// log.Infof("time", data.time)
-		pvChannel <- urlObj
-		uvChannel <- urlObj
+		// fmt.Println("url :" + data.url + "refer: " + data.refer + "ua:" + data.ua)
+		if data.url != "" {
+			// 生成用户uid
+			hasher := md5.New()
+			hasher.Write([]byte(data.ip))
+			uid := hex.EncodeToString(hasher.Sum(nil))
+			urlObj := URLData{data, uid, formatURLData(data.url, data.time)}
+			// log.Infof("uid:" + uid + " url :" + data.url + " refer: " + data.refer + " ua:" + data.ua + " ip:" + data.ip)
+			// log.Infof("time", data.time)
+			// fmt.Println("node is: ", urlObj.unode)
+			pvChannel <- urlObj
+			uvChannel <- urlObj
+		}
 	}
 }
 
@@ -109,6 +114,7 @@ func formatURLData(u, t string) URLNODE {
 	str1 := "/id/"
 	str2 := ".html"
 	cutStr := func(start int, DEF string) URLNODE {
+		fmt.Println(DEF)
 		end := len(DEF)
 		URLType := str.Substr(u, start, end)
 		IDstart := str.IndexOf(u, str1, 0)
@@ -124,12 +130,15 @@ func formatURLData(u, t string) URLNODE {
 	}
 
 	u = strings.TrimSpace(u)
-	if pos1 := str.IndexOf(u, HANDLE_INDEX, 0); pos1 != -1 {
+	// fmt.Println("url is: ", u)
+	if pos1 := str.IndexOf(u, HANDLE_INDEX, 0); pos1 != -1 { // 如果是首页
 		return cutStr(pos1, HANDLE_INDEX)
-	} else if pos2 := str.IndexOf(u, HANDLE_LIST, 0); pos2 != -1 {
+	} else if pos2 := str.IndexOf(u, HANDLE_LIST, 0); pos2 != -1 { // 如果是列表页
 		return cutStr(pos2, HANDLE_LIST)
-	} else if pos3 := str.IndexOf(u, HANDLE_ARTICLE, 0); pos3 != -1 {
+	} else if pos3 := str.IndexOf(u, HANDLE_ARTICLE, 0); pos3 != -1 { // 如果是文章页
 		return cutStr(pos3, HANDLE_ARTICLE)
+	} else { // 默认首页
+		return URLNODE{"index", 1, u, t}
 	}
 	return URLNODE{}
 
@@ -146,6 +155,7 @@ func PvCounter(pvChannel chan URLData, storageChannel chan StorageBlock) {
 		}
 		storageChannel <- StorageBlock{"uv", "ZINCRBY", data.unode}
 	}
+	DataStorage(storageChannel)
 }
 
 /*
@@ -167,6 +177,7 @@ func UvCounter(uvChannel chan URLData, storageChannel chan StorageBlock) {
 			continue
 		}
 		storageChannel <- StorageBlock{"pv", "ZINCRBY", data.unode}
+		DataStorage(storageChannel)
 	}
 }
 
@@ -178,7 +189,7 @@ func DataStorage(storageChannel chan StorageBlock) {
 	// for block := range storageChannel {
 	// 	prefix := block.counterType + "_"
 	// }
-
+	// fmt.Println("storageChannel", storageChannel)
 }
 
 /*
@@ -204,10 +215,10 @@ func formatData(dataStr, tT string) string {
 func start() {
 	// 初始化channel, 用于传递数据
 	var (
-		logChannel     = make(chan string, params.routineNum)
-		pvChannel      = make(chan URLData, params.routineNum)
-		uvChannel      = make(chan URLData, params.routineNum)
-		storageChannel = make(chan StorageBlock, 2*params.routineNum)
+		logChannel = make(chan string, params.routineNum)
+		pvChannel  = make(chan URLData, params.routineNum)
+		uvChannel  = make(chan URLData, params.routineNum)
+		// storageChannel = make(chan StorageBlock, 2*params.routineNum)
 	)
 	/*
 		创建日志消费者
@@ -218,7 +229,7 @@ func start() {
 	// 创建一组日志处理
 	go LogHandle(logChannel, pvChannel, uvChannel)
 
-	// 创建PV UV统计器
-	go PvCounter(pvChannel, storageChannel)
-	go UvCounter(uvChannel, storageChannel)
+	// // 创建PV UV统计器
+	// go PvCounter(pvChannel, storageChannel)
+	// go UvCounter(uvChannel, storageChannel)
 }
