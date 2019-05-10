@@ -47,10 +47,11 @@ func init() {
 		fmt.Println(err)
 		log.Errorf("redis connect error!")
 	} else {
+		redisPool.Cmd("AUTH", "zjhredis") // 认证redis
 		go func() {
 			for {
 				redisPool.Cmd("AUTH", "zjhredis")
-				redisPool.Cmd("ping").String()
+				redisPool.Cmd("ping") // .String()
 				// str := redisPool.Cmd("ping").String()
 				// fmt.Println("ping:", str)
 				// 每隔10s ping一下redis服务,防止挂掉

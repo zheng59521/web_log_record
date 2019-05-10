@@ -59,13 +59,14 @@ type URLNODE struct {
 	unRid  int    // 资源ID
 	unURL  string // 页面url
 	unTime string // 浏览时间
+	ip     string // ip
 }
 
 /*
 格式化数据,存储入数据库
 */
 type StorageBlock struct {
-	counterType  string  // 统计类型
-	storageModel string  // redis相关
-	uNode        URLNODE // url节点数据
+	pType string // 统计类型
+	// storageModel string  // redis相关
+	uNode URLNODE // url节点数据
 }
