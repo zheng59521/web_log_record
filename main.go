@@ -51,9 +51,9 @@ func init() {
 		go func() {
 			for {
 				redisPool.Cmd("AUTH", "zjhredis")
-				redisPool.Cmd("ping") // .String()
-				// str := redisPool.Cmd("ping").String()
-				// fmt.Println("ping:", str)
+				// redisPool.Cmd("ping") // .String()
+				str := redisPool.Cmd("ping").String()
+				fmt.Println("ping:", str)
 				// 每隔10s ping一下redis服务,防止挂掉
 				time.Sleep(time.Second * 10)
 			}

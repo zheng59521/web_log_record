@@ -55,18 +55,18 @@ type URLData struct {
 用作存储pv|uv数据
 */
 type URLNODE struct {
-	unType string // 页面类型 首页|列表页|详情页
-	unRid  int    // 资源ID
-	unURL  string // 页面url
-	unTime string // 浏览时间
-	ip     string // ip
+	UNType string // 页面类型 首页|列表页|详情页
+	UNRid  int    // 资源ID
+	UNURL  string // 页面url
+	UNTime string // 浏览时间
+	IP     string // ip
 }
 
 /*
 格式化数据,存储入数据库
 */
 type StorageBlock struct {
-	pType string // 统计类型
+	PType string // 统计类型
 	// storageModel string  // redis相关
-	uNode URLNODE // url节点数据
+	UNode URLNODE // url节点数据
 }

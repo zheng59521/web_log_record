@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
@@ -186,9 +187,15 @@ func UvCounter(uvChannel chan URLData, storageChannel chan StorageBlock) {
 */
 func DataStorage(storageChannel chan StorageBlock) {
 	redisPool.Cmd("AUTH", "zjhredis") // 认证
+
 	for it := range storageChannel {
 		// prefix := block.counterType + "_"
-		fmt.Printf("storageChannel %+v\n", it)
+		// fmt.Printf("storageChannel %+v\n", it)
+		dJson, err := json.Marshal(it)
+		if err != nil {
+			fmt.Println("error", err.Error())
+		}
+		fmt.Println(string(dJson))
 		// switch it.pType {
 		// case "pv":
 		// 	redisPool.Cmd("AUTH", "zjhredis")
