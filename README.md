@@ -10,7 +10,7 @@
 [流程Process](https://github.com/zheng59521/web_log_record/tree/dev/process.png)
 
 ## 进度
-    ** 格式化pu uv数据 ** 
+    ** 格式化pu uv数据为json数据 ** 
     
 
 
